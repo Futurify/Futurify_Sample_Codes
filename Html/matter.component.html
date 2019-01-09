@@ -1,0 +1,126 @@
+<div [@routerTransition]>
+  <div class="m-subheader ">
+    <div class="d-flex align-items-center">
+      <div class="mr-auto col-sm-6">
+        <h3 class="m-subheader__title m-subheader__title--separator">
+          <span>{{l("Matter")}}</span>
+        </h3>
+
+      </div>
+      <div class="col-sm-6 text-right">
+        <button class="btn btn-primary" *ngIf="isGranted('Pages.Matter.Create')" (click)="createOrEditMatterModal.show()"><i
+            class="fa fa-plus"></i>
+          {{l("CreateNewMatter")}}</button>
+      </div>
+    </div>
+  </div>
+  <div class="m-content">
+    <div class="m-portlet m-portlet--mobile">
+      <div class="m-portlet__body">
+        <form class="horizontal-form" autocomplete="off">
+          <div class="m-form m-form--label-align-right">
+            <div class="row align-items-center m--margin-bottom-10">
+              <div class="col-xl-12">
+                <div class="row form-group m-form__group align-items-center">
+                  <div class="form-group col-md-6">
+                    <select name="workingStatus" id="workingStatus" class="form-control" [(ngModel)]="workingStatus"
+                      (change)="getMatters()">
+                      <option *ngFor="let i of workingStatusArr" [value]="i.value">{{i.text}}</option>
+                    </select>
+                  </div>
+                  <div class="input-group form-group col-md-6">
+                    <input [(ngModel)]="filterText" name="filterText" id="filterText" autoFocus class="form-control"
+                      [placeholder]="l('SearchWithThreeDot')" type="text">
+                    <span class="input-group-btn">
+                      <button (click)="getMatters()" class="btn btn-primary" type="submit"><i class="flaticon-search-1"
+                          [attr.aria-label]="l('Search')"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+        <div class="row align-items-center">
+          <!--<Primeng-TurboTable-Start>-->
+          <div class="primeng-datatable-container" [busyIf]="primengTableHelper.isLoading">
+            <p-table #dataTable (onLazyLoad)="getMatters($event)" [value]="primengTableHelper.records" rows="{{primengTableHelper.defaultRecordsCountPerPage}}"
+              [paginator]="false" [lazy]="true" [scrollable]="true" ScrollWidth="100%" [responsive]="primengTableHelper.isResponsive"
+              [resizableColumns]="primengTableHelper.resizableColumns">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 130px" [hidden]="!isGrantedAny('Pages.Timekeeper.Add','Pages.Matter.Delete','Pages.Matter.Edit')">{{l('Actions')}}</th>
+                  <th style="width: 150px" pSortableColumn="workingStatus" *ngIf="isGranted('Pages.Matter.Change.Status')">
+                    {{l('Working Status')}}
+                    <p-sortIcon field="status"></p-sortIcon>
+                  </th>
+                  <th style="width: 150px" *ngFor="let column of columns" pSortableColumn="{{column.sort}}">
+                    {{l(column.header)}}
+                    <p-sortIcon field="{{column.field}}"></p-sortIcon>
+                  </th>
+                  <th style="width: 150px" pSortableColumn="status">
+                    {{l('Approval Status')}}
+                    <p-sortIcon field="status"></p-sortIcon>
+                  </th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-record="$implicit">
+                <tr>
+                  <td style="width: 130px" [hidden]="!isGrantedAny('Pages.MatterTimekeeper','Pages.Matter.Delete','Pages.Matter.Edit')">
+                    <span class="ui-column-title"> {{l('Actions')}}</span>
+                    <button class="btn btn-outline-primary m-btn m-btn--icon m-btn--icon-only m-btn--pill" *ngIf="isGrantedAny('Pages.Matter.Edit','Pages.MatterTimekeeper')"
+                      title="{{l('EditMatter')}}" (click)="createOrEditMatterModal.show(record.id)">
+                      <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-info m-btn m-btn--icon m-btn--icon-only m-btn--pill" *ngIf="isGranted('Pages.MatterTimekeeper')"
+                      title="{{l('Matter Details')}}" (click)="matterDetail(record.id)">
+                        <i class="fa fa-info"></i>
+                    </button>
+                    <button *ngIf="isGranted('Pages.Matter.Delete')" id="delete" (click)="deleteMatter(record)" title="{{l('DeleteMatter')}}"
+                      class="btn btn-outline-danger m-btn m-btn--icon m-btn--icon-only m-btn--pill" href="javascript:;">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </td>
+                  <td style="width: 150px" *ngIf="isGranted('Pages.Matter.Change.Status')">
+                    <span class="ui-column-title"> {{ l('Working Status') }}</span>
+                    <button (click)="changeWorkingStatus(record)" *ngIf=" isGranted('Pages.Matter.Change.Status') && record.workingStatus === 1"
+                      title="{{l('Click to open this matter')}}" class=" btn
+btn-outline-danger">{{workingStatuses[record.workingStatus]
+                      }}</button>
+                    <button (click)="changeWorkingStatus(record)" *ngIf="isGranted('Pages.Matter.Change.Status') && record.workingStatus === 0"
+                      title="{{l('Click to close this matter')}}" class="btn btn-outline-info">{{
+                      workingStatuses[record.workingStatus] }}</button>
+                  </td>
+                  <td *ngFor="let column of columns" style="width: 150px">
+                    <span class="ui-column-title"> {{l(column.header)}}</span>
+                    {{ column.field == 'creationTime' ? (record[column.field] | date:'medium') :
+                    record[column.field] }}
+                  </td>
+                  <td style="width: 150px">
+                    <span class="ui-column-title"> {{l('Status')}}</span>
+                    <span class="m-badge {{ statusClass[record.status] }} m-badge--wide"> {{ statuses[record.status] }}</span>
+                  </td>
+
+                </tr>
+              </ng-template>
+            </p-table>
+            <div class="primeng-no-data" *ngIf="primengTableHelper.totalRecordsCount == 0">
+              {{l('NoData')}}
+            </div>
+            <div class="primeng-paging-container">
+              <p-paginator rows="{{primengTableHelper.defaultRecordsCountPerPage}}" #paginator (onPageChange)="getMatters($event)"
+                [totalRecords]="primengTableHelper.totalRecordsCount" [rowsPerPageOptions]="primengTableHelper.predefinedRecordsCountPerPage">
+              </p-paginator>
+              <span class="total-records-count">
+                {{l('TotalRecordsCount', primengTableHelper.totalRecordsCount)}}
+              </span>
+            </div>
+          </div>
+          <!--<Primeng-TurboTable-End>-->
+        </div>
+      </div>
+    </div>
+  </div>
+  <createOrEditMatterModal #createOrEditMatterModal (modalSave)="getMatters()">
+  </createOrEditMatterModal>
+</div>
