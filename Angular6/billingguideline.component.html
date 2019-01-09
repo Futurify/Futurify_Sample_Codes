@@ -1,0 +1,44 @@
+<div [@routerTransition]>
+    <div class="m-subheader ">
+        <div class="d-flex align-items-center">
+            <div class="mr-auto col-sm-6">
+                <h3 class="m-subheader__title m-subheader__title--separator">
+                    <span>{{l("BillingGuideLine")}}</span>
+                </h3>
+            </div>
+        </div>
+    </div>
+    <div class="m-content">
+        <div class="m-portlet m-portlet--mobile">
+            <div class="m-portlet__body">
+                <h3>{{l("BillingGuideLineInfomation")}}</h3>
+                <div class="m-widget1">                    
+                    <form class="m-form" novalidate #keywordForm="ngForm" (ngSubmit)="save()">
+
+                        <div class="m-form__group form-group" *ngFor="let field of booleanFields">
+                            <label for="{{field.Name}}">{{l(field.DisplayName)}}</label>
+                            <div class="m-radio-list">
+                                <label class="m-radio">
+                                    <input type="radio" id="{{field.Name}}" name="{{field.Name}}" [value]="true" [(ngModel)]="guideLine[field.Name]"> Yes
+                                    <span></span>
+                                </label>
+                                <label class="m-radio">
+                                    <input type="radio" id="{{field.Name}}" name="{{field.Name}}" [value]="false" [(ngModel)]="guideLine[field.Name]"> No
+                                    <span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        
+                        <div class="form-group m-form__group" *ngFor="let field of numberFields">
+                            <label for="{{field.Name}}">{{l(field.DisplayName)}}</label>
+                            <input type="number" class="form-control m-input" id="{{field.Name}}" name="{{field.Name}}" [(ngModel)]="guideLine[field.Name]">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" [busyText]="l('SavingWithThreeDot')" [buttonBusy]="saving" [disabled]="!keywordForm.form.valid"><i class="fa fa-save"></i> <span>{{l("Save")}}</span></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
